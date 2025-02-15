@@ -10,6 +10,26 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(MITMQTT_BUILD_TESTS "Build test suite" OFF)
 option(MITMQTT_ENABLE_WARNINGS "Enable warnings" ON)
 
+# Find Boost
+set(BOOST_ROOT "C:/Boost/boost_1_87_0/boost_1_87_0")
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(Boost 1.82.0 REQUIRED)
+
+if(NOT Boost_FOUND)
+    message(FATAL_ERROR "Could not find Boost!")
+endif()
+
+# Log Boost information for debugging
+message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+message(STATUS "Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
+message(STATUS "Boost_VERSION: ${Boost_VERSION}")
+
+# Find other required packages
+find_package(OpenGL REQUIRED)
+find_package(OpenSSL REQUIRED)
+
 # Dependencies
 include(FetchContent)
 
@@ -32,16 +52,18 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(glfw)
 
-# Mosquitto MQTT library
-FetchContent_Declare(
-    mosquitto
-    GIT_REPOSITORY https://github.com/eclipse/mosquitto.git
-    GIT_TAG v2.0.15
-)
-FetchContent_MakeAvailable(mosquitto)
+# MQTT Library (using Boost.Beast WebSocket)
+include_directories(${Boost_INCLUDE_DIRS})
+add_definitions(-DBOOST_ALL_NO_LIB)
+add_definitions(-DBOOST_ALL_DYN_LINK)
 
-# OpenSSL for TLS support
-find_package(OpenSSL REQUIRED)
+# nlohmann-json (for packet analysis)
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+)
+FetchContent_MakeAvailable(json)
 
 # Set compiler warnings
 if(MITMQTT_ENABLE_WARNINGS)
