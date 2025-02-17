@@ -57,3 +57,13 @@ void MQTTHandler::doAccept() {
             }
         });
 }
+void MQTTHandler::handleConnection(boost::asio::ip::tcp::socket socket) {
+    auto conn = std::make_shared<MQTTConnection>(std::move(socket), *this);
+    connections_.push_back(conn);
+    
+    if (connectionCallback_) {
+        connectionCallback_(conn);
+    }
+
+    conn->start();
+}
