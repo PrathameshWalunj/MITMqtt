@@ -59,4 +59,8 @@ private:
             }
             ImGui::EndMainMenuBar();
         }
+        // demo window 
+        if (show_demo_window) {
+            ImGui::ShowDemoWindow(&show_demo_window);
+        }
     }
