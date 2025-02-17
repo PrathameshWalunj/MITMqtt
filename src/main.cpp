@@ -1,4 +1,13 @@
   
+    ~Application() {
+        // cleanup ImGui
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+
+        // GLFW cleanup happens automatically through unique ptr
+        glfwTerminate();
+    }
 private:
     void initializeGLFW() {
         if (!glfwInit()) {
