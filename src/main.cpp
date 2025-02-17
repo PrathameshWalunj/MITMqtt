@@ -1,4 +1,4 @@
-  
+
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -28,6 +28,7 @@ public:
         // initialize ImGui
         initializeImGui();
     }
+
     ~Application() {
         // cleanup ImGui
         ImGui_ImplOpenGL3_Shutdown();
@@ -65,11 +66,13 @@ public:
             glfwSwapBuffers(window.get());
         }
     }
+
 private:
     void initializeGLFW() {
         if (!glfwInit()) {
             throw std::runtime_error("Failed to initialize GLFW");
         }
+
         // decide GL+GLSL versions
         #if defined(IMGUI_IMPL_OPENGL_ES2)
             const char* glsl_version = "#version 100";
@@ -89,6 +92,7 @@ private:
         #endif
         glsl_version_ = glsl_version;
     }
+
     void createWindow() {
         // create main application window
         window.reset(glfwCreateWindow(1280, 720, "MITMqtt - MQTT Intercepting Proxy", nullptr, nullptr));
@@ -96,16 +100,27 @@ private:
             throw std::runtime_error("Failed to create GLFW window");
         }
 
+        glfwMakeContextCurrent(window.get());
+        // enable vsync
+        glfwSwapInterval(1); 
+    }
+
     void initializeImGui() {
         // initialize ImGui context and configure settings
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
+        // enable keyboard controls 
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   
+
+        // choice
         ImGui::StyleColorsDark();
+
         // setup platform/renderer backends
         ImGui_ImplGlfw_InitForOpenGL(window.get(), true);
         ImGui_ImplOpenGL3_Init(glsl_version_);
     }
+
     void renderMainWindow() {
         static bool show_demo_window = true;
         static bool show_intercept_window = true;
@@ -125,10 +140,12 @@ private:
             }
             ImGui::EndMainMenuBar();
         }
+
         // demo window 
         if (show_demo_window) {
             ImGui::ShowDemoWindow(&show_demo_window);
         }
+
         // intercept window
         if (show_intercept_window) {
             ImGui::Begin("MQTT Interceptor", &show_intercept_window);
@@ -158,4 +175,19 @@ private:
             ImGui::End();
         }
     }
+
+private:
+    std::unique_ptr<GLFWwindow, GLFWwindowDeleter> window;
+    const char* glsl_version_;
+};
+
+int main([[maybe_unused]]int argc,[[maybe_unused]] char** argv) {
+    try {
+        Application app;
+        app.run();
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
     }
+    return 0;
+}
