@@ -1,4 +1,33 @@
   
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+#include <GLFW/glfw3.h>
+
+#include <iostream>
+#include <stdexcept>
+#include <memory>
+
+// forward declaration generally better
+class Window;
+
+// custom deleter for GLFW window when using smart pointer
+struct GLFWwindowDeleter {
+    void operator()(GLFWwindow* window) {
+        glfwDestroyWindow(window);
+    }
+};
+
+class Application {
+public:
+    Application() {
+        // initialize the GLFW library
+        initializeGLFW();
+        // create window using GLFW
+        createWindow();
+        // initialize ImGui
+        initializeImGui();
+    }
     ~Application() {
         // cleanup ImGui
         ImGui_ImplOpenGL3_Shutdown();
