@@ -105,7 +105,7 @@ public:
     }
 
 private:
-    void initializeGLFW() {
+  void initializeGLFW() {
         if (!glfwInit()) {
             throw std::runtime_error("Failed to initialize GLFW");
         }
@@ -159,7 +159,7 @@ private:
     }
 
     void renderMainWindow() {
-        static bool show_demo_window = true;
+        static bool show_packet_window = true;
         static bool show_intercept_window = true;
         
         // main menu bar (top)
@@ -171,18 +171,15 @@ private:
                 ImGui::EndMenu();
             }
             if (ImGui::BeginMenu("View")) {
-                ImGui::MenuItem("Show Demo Window", nullptr, &show_demo_window);
+                ImGui::MenuItem("Show Packet Window", nullptr, &show_packet_window);
                 ImGui::MenuItem("Show Intercept Window", nullptr, &show_intercept_window);
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
         }
 
-        // demo window 
-        if (show_demo_window) {
-            ImGui::ShowDemoWindow(&show_demo_window);
-        }
-
+       
+       
         // intercept window
         if (show_intercept_window) {
             ImGui::Begin("MQTT Interceptor", &show_intercept_window);
@@ -223,11 +220,42 @@ private:
 
             ImGui::End();
         }
+
+        if (show_packet_window) {
+            ImGui::Begin("MQTT Packets", &show_packet_window);
+
+            if (ImGui::BeginTable("Packets", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
+                ImGui::TableSetupColumn("Time");
+                ImGui::TableSetupColumn("Direction");
+                ImGui::TableSetupColumn("Type");
+                ImGui::TableSetupColumn("Payload");
+                ImGui::TableHeadersRow();
+
+                for (const auto& packet : capturedPackets) {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::TextUnformatted(packet.timestamp.c_str());
+                    ImGui::TableNextColumn();
+                    ImGui::TextUnformatted(packet.direction.c_str());
+                    ImGui::TableNextColumn();
+                    ImGui::TextUnformatted(packet.type.c_str());
+                    ImGui::TableNextColumn();
+                    ImGui::TextUnformatted(packet.payload.c_str());
+                }
+                ImGui::EndTable();
+            }
+            ImGui::End();
+        }
     }
 
 private:
     std::unique_ptr<GLFWwindow, GLFWwindowDeleter> window;
     const char* glsl_version_;
+
+    boost::asio::io_context ioc_;
+    mitmqtt::MQTTHandler mqtt_handler_;
+    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard_;
+    std::thread io_thread_;
 };
 
 int main([[maybe_unused]]int argc,[[maybe_unused]] char** argv) {
