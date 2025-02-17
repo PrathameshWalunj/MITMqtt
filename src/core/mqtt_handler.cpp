@@ -75,3 +75,20 @@ MQTTConnection::MQTTConnection(boost::asio::ip::tcp::socket socket, MQTTHandler&
     // Initial buffer size
     readBuffer_.resize(8192); 
 }
+void MQTTConnection::start() {
+    connected_ = true;
+    doRead();
+}
+
+void MQTTConnection::stop() {
+    if (!connected_) return;
+    
+    connected_ = false;
+    
+    boost::system::error_code ec;
+    clientSocket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+    brokerSocket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+    
+    clientSocket_.close(ec);
+    brokerSocket_.close(ec);
+}
