@@ -29,3 +29,10 @@ private:
         if (!window) {
             throw std::runtime_error("Failed to create GLFW window");
         }
+
+    void initializeImGui() {
+        // initialize ImGui context and configure settings
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+    }
