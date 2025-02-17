@@ -11,3 +11,10 @@
 #include <functional>
 
 namespace mitmqtt {
+// Forward declarations
+class MQTTPacket;
+class MQTTConnection;
+
+// Callback types
+using PacketCallback = std::function<void(const MQTTPacket&)>;
+using ConnectionCallback = std::function<void(std::shared_ptr<MQTTConnection>)>;
