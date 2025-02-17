@@ -40,16 +40,33 @@ struct GLFWwindowDeleter {
 
 class Application {
 public:
-    Application() {
+    Application()
+        : ioc_()
+        , mqtt_handler_(ioc_)
+        , work_guard_(boost::asio::make_work_guard(ioc_)) {
         // initialize the GLFW library
         initializeGLFW();
         // create window using GLFW
         createWindow();
         // initialize ImGui
         initializeImGui();
+
+        // start io context in diff thread
+        io_thread_ = std::thread([this]() {
+            ioc_.run();
+        });
     }
 
     ~Application() {
+
+        // stop mqtt handler
+        mqtt_handler_.stop();
+
+        // stop io context
+        work_guard_.reset();
+        if (io_thread_.joinable()) {
+            io_thread_.join();
+        }
         // cleanup ImGui
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
