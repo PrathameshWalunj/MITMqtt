@@ -40,4 +40,23 @@ private:
         ImGui_ImplGlfw_InitForOpenGL(window.get(), true);
         ImGui_ImplOpenGL3_Init(glsl_version_);
     }
+    void renderMainWindow() {
+        static bool show_demo_window = true;
+        static bool show_intercept_window = true;
+        
+        // main menu bar (top)
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if (ImGui::MenuItem("Exit", "Alt+F4")) {
+                    glfwSetWindowShouldClose(window.get(), true);
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("View")) {
+                ImGui::MenuItem("Show Demo Window", nullptr, &show_demo_window);
+                ImGui::MenuItem("Show Intercept Window", nullptr, &show_intercept_window);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
     }
