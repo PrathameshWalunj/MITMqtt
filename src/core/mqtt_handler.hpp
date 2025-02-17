@@ -52,3 +52,18 @@ public:
     // Manual packet modification/injection
     void modifyPacket(std::shared_ptr<MQTTConnection> conn, const MQTTPacket& packet);
     void injectPacket(std::shared_ptr<MQTTConnection> conn, const MQTTPacket& packet);
+private:
+    // Internal methods
+    void doAccept();
+    void handleConnection(boost::asio::ip::tcp::socket socket);
+
+    // Member variables
+    boost::asio::io_context& ioc_;
+    boost::asio::ip::tcp::acceptor acceptor_;
+    bool running_;
+
+    PacketCallback packetCallback_;
+    ConnectionCallback connectionCallback_;
+
+    std::vector<std::shared_ptr<MQTTConnection>> connections_;
+};
