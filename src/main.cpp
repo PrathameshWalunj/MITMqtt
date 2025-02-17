@@ -63,4 +63,33 @@ private:
         if (show_demo_window) {
             ImGui::ShowDemoWindow(&show_demo_window);
         }
+        // intercept window
+        if (show_intercept_window) {
+            ImGui::Begin("MQTT Interceptor", &show_intercept_window);
+            
+            // connection status
+            static bool interceptEnabled = false;
+            ImGui::Checkbox("Enable Interception", &interceptEnabled);
+            
+            // basic connection info
+            static char listenAddress[128] = "0.0.0.0";
+            static int listenPort = 1883;
+            ImGui::InputText("Listen Address", listenAddress, IM_ARRAYSIZE(listenAddress));
+            ImGui::InputInt("Listen Port", &listenPort);
+
+            // broker settings
+            static char brokerAddress[128] = "test.mosquitto.org";
+            static int brokerPort = 1883;
+            ImGui::InputText("Broker Address", brokerAddress, IM_ARRAYSIZE(brokerAddress));
+            ImGui::InputInt("Broker Port", &brokerPort);
+
+            // start stop intercept button
+            if (ImGui::Button(interceptEnabled ? "Stop" : "Start")) {
+                interceptEnabled = !interceptEnabled;
+                // TODO: figuring this out (implement actual proxy start/stop)
+            }
+
+            ImGui::End();
+        }
+    }
     }
