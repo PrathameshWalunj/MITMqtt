@@ -38,3 +38,10 @@ void MQTTHandler::stop() {
     }
     connections_.clear();
 }
+void MQTTHandler::setPacketCallback(PacketCallback callback) {
+    packetCallback_ = std::move(callback);
+}
+
+void MQTTHandler::setConnectionCallback(ConnectionCallback callback) {
+    connectionCallback_ = std::move(callback);
+}
