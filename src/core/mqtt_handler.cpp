@@ -45,3 +45,15 @@ void MQTTHandler::setPacketCallback(PacketCallback callback) {
 void MQTTHandler::setConnectionCallback(ConnectionCallback callback) {
     connectionCallback_ = std::move(callback);
 }
+void MQTTHandler::doAccept() {
+    acceptor_.async_accept(
+        [this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
+            if (!ec) {
+                handleConnection(std::move(socket));
+            }
+
+            if (running_) {
+                doAccept();
+            }
+        });
+}
