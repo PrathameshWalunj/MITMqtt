@@ -36,4 +36,8 @@ private:
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         ImGui::StyleColorsDark();
+        // setup platform/renderer backends
+        ImGui_ImplGlfw_InitForOpenGL(window.get(), true);
+        ImGui_ImplOpenGL3_Init(glsl_version_);
+    }
     }
