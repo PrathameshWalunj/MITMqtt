@@ -92,3 +92,30 @@ void MQTTConnection::stop() {
     clientSocket_.close(ec);
     brokerSocket_.close(ec);
 }
+void MQTTConnection::doRead() {
+    if (!connected_) return;
+
+    auto self = shared_from_this();
+    clientSocket_.async_read_some(
+        boost::asio::buffer(readBuffer_),
+        [this, self](boost::system::error_code ec, std::size_t length) {
+            if (ec) {
+                stop();
+                return;
+            }
+
+            // TODO: Parse MQTT packet and handle it
+            // For now, I'll just forward the data
+            boost::asio::async_write(
+                brokerSocket_,
+                boost::asio::buffer(readBuffer_, length),
+                [this, self](boost::system::error_code ec, std::size_t /*length*/) {
+                    if (ec) {
+                        stop();
+                        return;
+                    }
+                    
+                    doRead();
+                });
+        });
+}
