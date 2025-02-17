@@ -1,4 +1,3 @@
-  
 #include "core/mqtt_handler.hpp"
 #include <iostream>
 #include <boost/bind/bind.hpp>
@@ -14,6 +13,7 @@ MQTTHandler::MQTTHandler(boost::asio::io_context& ioc)
 MQTTHandler::~MQTTHandler() {
     stop();
 }
+
 void MQTTHandler::start(const std::string& address, uint16_t port) {
     boost::asio::ip::tcp::endpoint endpoint(
         boost::asio::ip::make_address(address), port);
@@ -26,6 +26,7 @@ void MQTTHandler::start(const std::string& address, uint16_t port) {
     running_ = true;
     doAccept();
 }
+
 void MQTTHandler::stop() {
     if (!running_) return;
     
@@ -38,6 +39,7 @@ void MQTTHandler::stop() {
     }
     connections_.clear();
 }
+
 void MQTTHandler::setPacketCallback(PacketCallback callback) {
     packetCallback_ = std::move(callback);
 }
@@ -45,6 +47,7 @@ void MQTTHandler::setPacketCallback(PacketCallback callback) {
 void MQTTHandler::setConnectionCallback(ConnectionCallback callback) {
     connectionCallback_ = std::move(callback);
 }
+
 void MQTTHandler::doAccept() {
     acceptor_.async_accept(
         [this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
@@ -57,6 +60,7 @@ void MQTTHandler::doAccept() {
             }
         });
 }
+
 void MQTTHandler::handleConnection(boost::asio::ip::tcp::socket socket) {
     auto conn = std::make_shared<MQTTConnection>(std::move(socket), *this);
     connections_.push_back(conn);
@@ -67,6 +71,9 @@ void MQTTHandler::handleConnection(boost::asio::ip::tcp::socket socket) {
 
     conn->start();
 }
+
+
+
 MQTTConnection::MQTTConnection(boost::asio::ip::tcp::socket socket, MQTTHandler& handler)
     : clientSocket_(std::move(socket))
     , brokerSocket_(socket.get_executor())
@@ -75,6 +82,7 @@ MQTTConnection::MQTTConnection(boost::asio::ip::tcp::socket socket, MQTTHandler&
     // Initial buffer size
     readBuffer_.resize(8192); 
 }
+
 void MQTTConnection::start() {
     connected_ = true;
     doRead();
@@ -92,6 +100,7 @@ void MQTTConnection::stop() {
     clientSocket_.close(ec);
     brokerSocket_.close(ec);
 }
+
 void MQTTConnection::doRead() {
     if (!connected_) return;
 
@@ -119,3 +128,25 @@ void MQTTConnection::doRead() {
                 });
         });
 }
+
+std::string MQTTConnection::getClientId() const {
+    return clientId_;
+}
+
+std::string MQTTConnection::getClientAddress() const {
+    try {
+        return clientSocket_.remote_endpoint().address().to_string();
+    } catch (...) {
+        return "unknown";
+    }
+}
+
+std::string MQTTConnection::getBrokerAddress() const {
+    try {
+        return brokerSocket_.remote_endpoint().address().to_string();
+    } catch (...) {
+        return "unknown";
+    }
+}
+
+}  
