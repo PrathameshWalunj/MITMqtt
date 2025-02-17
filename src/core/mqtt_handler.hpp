@@ -67,3 +67,20 @@ private:
 
     std::vector<std::shared_ptr<MQTTConnection>> connections_;
 };
+
+// Class to manage individual MQTT connections
+class MQTTConnection : public std::enable_shared_from_this<MQTTConnection> {
+public:
+    MQTTConnection(boost::asio::ip::tcp::socket socket, MQTTHandler& handler);
+
+    void start();
+    void stop();
+
+    // Send a packet to either client or broker
+    void sendToClient(const MQTTPacket& packet);
+    void sendToBroker(const MQTTPacket& packet);
+
+    // Get connection info
+    std::string getClientId() const;
+    std::string getClientAddress() const;
+    std::string getBrokerAddress() const;
