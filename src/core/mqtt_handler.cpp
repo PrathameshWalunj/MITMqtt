@@ -26,3 +26,15 @@ void MQTTHandler::start(const std::string& address, uint16_t port) {
     running_ = true;
     doAccept();
 }
+void MQTTHandler::stop() {
+    if (!running_) return;
+    
+    running_ = false;
+    acceptor_.close();
+
+    // Stop all active connections
+    for (auto& conn : connections_) {
+        if (conn) conn->stop();
+    }
+    connections_.clear();
+}
