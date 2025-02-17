@@ -35,3 +35,7 @@ enum class PacketType : uint8_t {
     PINGRESP = 13,
     DISCONNECT = 14
 };
+class MQTTHandler {
+public:
+    MQTTHandler(boost::asio::io_context& ioc);
+    ~MQTTHandler();
