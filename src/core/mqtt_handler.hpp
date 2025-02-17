@@ -39,3 +39,16 @@ class MQTTHandler {
 public:
     MQTTHandler(boost::asio::io_context& ioc);
     ~MQTTHandler();
+    // Start listening for MQTT connections
+    void start(const std::string& address, uint16_t port);
+    
+    // Stop the handler
+    void stop();
+
+    // Set callbacks
+    void setPacketCallback(PacketCallback callback);
+    void setConnectionCallback(ConnectionCallback callback);
+
+    // Manual packet modification/injection
+    void modifyPacket(std::shared_ptr<MQTTConnection> conn, const MQTTPacket& packet);
+    void injectPacket(std::shared_ptr<MQTTConnection> conn, const MQTTPacket& packet);
