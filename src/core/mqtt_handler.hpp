@@ -1,4 +1,3 @@
-  
 #pragma once
 
 #include <boost/asio.hpp>
@@ -11,6 +10,7 @@
 #include <functional>
 
 namespace mitmqtt {
+
 // Forward declarations
 class MQTTPacket;
 class MQTTConnection;
@@ -18,6 +18,7 @@ class MQTTConnection;
 // Callback types
 using PacketCallback = std::function<void(const MQTTPacket&)>;
 using ConnectionCallback = std::function<void(std::shared_ptr<MQTTConnection>)>;
+
 // MQTT packet types
 enum class PacketType : uint8_t {
     CONNECT = 1,
@@ -35,10 +36,12 @@ enum class PacketType : uint8_t {
     PINGRESP = 13,
     DISCONNECT = 14
 };
+
 class MQTTHandler {
 public:
     MQTTHandler(boost::asio::io_context& ioc);
     ~MQTTHandler();
+
     // Start listening for MQTT connections
     void start(const std::string& address, uint16_t port);
     
@@ -52,6 +55,7 @@ public:
     // Manual packet modification/injection
     void modifyPacket(std::shared_ptr<MQTTConnection> conn, const MQTTPacket& packet);
     void injectPacket(std::shared_ptr<MQTTConnection> conn, const MQTTPacket& packet);
+
 private:
     // Internal methods
     void doAccept();
@@ -84,3 +88,22 @@ public:
     std::string getClientId() const;
     std::string getClientAddress() const;
     std::string getBrokerAddress() const;
+
+private:
+    void doRead();
+    void doWrite();
+    void connectToBroker();
+    void handlePacket(const MQTTPacket& packet);
+
+    boost::asio::ip::tcp::socket clientSocket_;
+    boost::asio::ip::tcp::socket brokerSocket_;
+    MQTTHandler& handler_;
+
+    std::queue<std::vector<uint8_t>> writeQueue_;
+    std::vector<uint8_t> readBuffer_;
+
+    std::string clientId_;
+    bool connected_;
+};
+
+}  
