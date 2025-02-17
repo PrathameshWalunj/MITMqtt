@@ -3,10 +3,30 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <GLFW/glfw3.h>
+#include "core/mqtt_handler.hpp"
 
 #include <iostream>
 #include <stdexcept>
 #include <memory>
+#include <string>
+#include <vector>
+#include <queue>
+
+
+namespace {
+    // store captured packets for display
+    struct PacketInfo {
+        // client -> broker or vv
+        std::string direction;
+        // CONNECT, PUBLISH etc
+        std::string type;
+        // packet content
+        std::string payload;
+        // timestamp
+        std::string timestamp;
+    };
+    std::vector<PacketInfo> capturedPackets;
+}
 
 // forward declaration generally better
 class Window;
