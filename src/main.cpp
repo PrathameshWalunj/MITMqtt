@@ -204,9 +204,21 @@ private:
             ImGui::InputInt("Broker Port", &brokerPort);
 
             // start stop intercept button
-            if (ImGui::Button(interceptEnabled ? "Stop" : "Start")) {
-                interceptEnabled = !interceptEnabled;
-                // TODO: figuring this out (implement actual proxy start/stop)
+            if (ImGui::Button(interceptEnabled ? "Stop Intercepting" : "Start Intercepting")) {
+                if (!interceptEnabled) {
+                    try {
+                        mqtt_handler_.start(listenAddress, static_cast<uint16_t>(listenPort));
+                        interceptEnabled = true;
+                    }
+                    catch (const std::exception& e) {
+                        std::cerr << "Failed to start MQTT handler: " << e.what() << std::endl;
+
+                    }
+                }
+                else {
+                    mqtt_handler_.stop();
+                    interceptEnabled = false;
+                }
             }
 
             ImGui::End();
