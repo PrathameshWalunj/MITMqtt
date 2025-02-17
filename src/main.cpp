@@ -8,6 +8,34 @@
         // GLFW cleanup happens automatically through unique ptr
         glfwTerminate();
     }
+
+    void run() {
+        while (!glfwWindowShouldClose(window.get())) {
+            // poll and handle events
+            // handle user inputs
+            glfwPollEvents();
+
+            // start the new ImGui frame
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
+            // render the main window UI
+            renderMainWindow();
+
+            // rendering
+            ImGui::Render();
+            int display_w, display_h;
+            glfwGetFramebufferSize(window.get(), &display_w, &display_h);
+            glViewport(0, 0, display_w, display_h);
+            glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            
+            // swap buffers to display the frame
+            glfwSwapBuffers(window.get());
+        }
+    }
 private:
     void initializeGLFW() {
         if (!glfwInit()) {
