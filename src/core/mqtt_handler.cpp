@@ -67,3 +67,11 @@ void MQTTHandler::handleConnection(boost::asio::ip::tcp::socket socket) {
 
     conn->start();
 }
+MQTTConnection::MQTTConnection(boost::asio::ip::tcp::socket socket, MQTTHandler& handler)
+    : clientSocket_(std::move(socket))
+    , brokerSocket_(socket.get_executor())
+    , handler_(handler)
+    , connected_(false) {
+    // Initial buffer size
+    readBuffer_.resize(8192); 
+}
