@@ -4,6 +4,16 @@
 
 namespace mitmqtt {
 
+    const char* directionToString(PacketDirection direction) {
+        switch (direction) {
+            case PacketDirection::ClientToBroker:
+                return "Client -> Broker";
+            case PacketDirection::BrokerToClient:
+                return "Broker -> Client";
+            default:
+                return "Unknown";
+        }
+    }
 MQTTHandler::MQTTHandler(boost::asio::io_context& ioc)
     : ioc_(ioc)
     , acceptor_(ioc)
