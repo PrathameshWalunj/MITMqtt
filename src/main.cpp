@@ -51,6 +51,26 @@ public:
         // initialize ImGui
         initializeImGui();
 
+        mqtt_handler_.setPacketCallback([this](mitmqtt::PacketDirection direction, const std::string& type, const std::string& payload) {
+            // get current timestamp
+            auto now = std::chrono::system_clock::now();
+            auto time = std::chrono::system_clock::to_time_t(now);
+            std::string timestamp = std::ctime(&time);
+            timestamp = timestamp.substr(0, timestamp.length() - 1);
+
+            // add packet to display queue
+            mitmqtt::PacketInfo info{
+                direction,
+                type,
+                payload,
+                timestamp
+            };
+            mitmqtt::capturedPackets.push_back(info);
+
+            if (mitmqtt::capturedPackets.size() > 1000) {
+                mitmqtt::capturedPackets.erase(mitmqtt::capturedPackets.begin());
+            }
+        });
         // start io context in diff thread
         io_thread_ = std::thread([this]() {
             ioc_.run();
