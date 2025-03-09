@@ -228,6 +228,14 @@ void MQTTConnection::doRead() {
                                 uint8_t puback[] = {0x40, 0x02,
                                                     static_cast<uint8_t>(packetId >> 8),
                                                     static_cast<uint8_t>(packetId & 0xFF)};
+                                boost::asio::async_write(
+                                    clientSocket_,
+                                    boost::asio::buffer(puback, sizeof(puback)),
+                                    [this, self](boost::system::error_code ec, std::size_t /*length*/) {
+                                    if (ec) {
+                                        stop();
+                                        return;
+                                    }
                     
                     doRead();
                 });
