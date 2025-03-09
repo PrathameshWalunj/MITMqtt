@@ -278,6 +278,10 @@ void MQTTConnection::doRead() {
                     }
 
                 }
+                else if (packetType == 8) { // SUBSCRIBE
+                    // Auto-acknowledge SUBSCRIBE
+                    if (length >= 4) {
+                        uint16_t packetId = (readBuffer_[2] << 8) | readBuffer_[3];
         });
 }
 
