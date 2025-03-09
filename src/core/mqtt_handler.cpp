@@ -215,6 +215,11 @@ void MQTTConnection::doRead() {
                         offset++;
                     }
                     offset++;
+                    if (offset + 2 <= length) {
+                        uint16_t topicLen = (readBuffer_[offset] << 8) | readBuffer_[offset + 1];
+                        offset += 2;
+
+                        offset += topicLen;
                     
                     doRead();
                 });
