@@ -236,6 +236,14 @@ void MQTTConnection::doRead() {
                                         stop();
                                         return;
                                     }
+                                    // Log the response packet
+                                    if (handler_.packetCallback_) {
+                                        handler_.packetCallback_(
+                                            PacketDirection::BrokerToClient,
+                                            "PUBACK",
+                                            "Message acknowledged"
+                                        );
+                                    }
                     
                     doRead();
                 });
