@@ -287,6 +287,30 @@ void MQTTConnection::doRead() {
                                           static_cast<uint8_t>(packetId >> 8), 
                                           static_cast<uint8_t>(packetId & 0xFF),
                                           0x00}; // Success with QoS 0
+                        boost::asio::async_write(
+                            clientSocket_,
+                            boost::asio::buffer(suback, sizeof(suback)),
+                            [this, self](boost::system::error_code ec, std::size_t /*length*/) {
+                                if (ec) {
+                                    stop();
+                                    return;
+                                }
+                                
+                                // Log the response packet
+                                if (handler_.packetCallback_) {
+                                    handler_.packetCallback_(
+                                        PacketDirection::BrokerToClient,
+                                        "SUBACK",
+                                        "Subscription acknowledged"
+                                    );
+                                }
+                                
+                                // Continue reading
+                                doRead();
+                            });
+                        return;
+                    }
+                }
         });
 }
 
