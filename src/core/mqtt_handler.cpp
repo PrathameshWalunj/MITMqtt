@@ -311,6 +311,17 @@ void MQTTConnection::doRead() {
                         return;
                     }
                 }
+                else if (packetType == 12) { // PINGREQ
+                    // Send PINGRESP
+                    uint8_t pingresp[] = {0xD0, 0x00};
+                    boost::asio::async_write(
+                        clientSocket_,
+                        boost::asio::buffer(pingresp, sizeof(pingresp)),
+                        [this, self](boost::system::error_code ec, std::size_t /*length*/) {
+                            if (ec) {
+                                stop();
+                                return;
+                            }
         });
 }
 
