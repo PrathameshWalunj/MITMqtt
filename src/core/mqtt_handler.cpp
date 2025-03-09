@@ -208,7 +208,13 @@ void MQTTConnection::doRead() {
                         });
                     return;
                 }
+                else if (packetType == 3) { // PUBLISH
+                    // Auto-acknowledge PUBLISH (for QoS 1)
+                    size_t offset = 1; 
+                    while (offset < length && (readBuffer_[offset] & 0x80) != 0) {
+                        offset++;
                     }
+                    offset++;
                     
                     doRead();
                 });
