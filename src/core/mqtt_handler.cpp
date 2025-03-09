@@ -220,6 +220,7 @@ void MQTTConnection::doRead() {
                         offset += 2;
 
                         offset += topicLen;
+                        uint8_t qos = (firstByte >> 1) & 0x03;
                     
                     doRead();
                 });
