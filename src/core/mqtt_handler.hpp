@@ -15,8 +15,15 @@ namespace mitmqtt {
 class MQTTPacket;
 class MQTTConnection;
 
+enum class PacketDirection {
+    ClientToBroker,
+    BrokerToClient
+};
+
+const char* directionToString(PacketDirection direction);
+
 // Callback types
-using PacketCallback = std::function<void(const MQTTPacket&)>;
+using PacketCallback = std::function<void(PacketDirection, const std::string&, const std::string&)>;
 using ConnectionCallback = std::function<void(std::shared_ptr<MQTTConnection>)>;
 
 // MQTT packet types
@@ -51,7 +58,7 @@ public:
     // Set callbacks
     void setPacketCallback(PacketCallback callback);
     void setConnectionCallback(ConnectionCallback callback);
-
+    PacketCallback packetCallback_;
     // Manual packet modification/injection
     void modifyPacket(std::shared_ptr<MQTTConnection> conn, const MQTTPacket& packet);
     void injectPacket(std::shared_ptr<MQTTConnection> conn, const MQTTPacket& packet);
@@ -66,7 +73,7 @@ private:
     boost::asio::ip::tcp::acceptor acceptor_;
     bool running_;
 
-    PacketCallback packetCallback_;
+   
     ConnectionCallback connectionCallback_;
 
     std::vector<std::shared_ptr<MQTTConnection>> connections_;
