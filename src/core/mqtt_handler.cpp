@@ -224,6 +224,10 @@ void MQTTConnection::doRead() {
                         if(qos > 0 && offset + 2 <= length) {
                             uint16_t packetId = (readBuffer_[offset] << 8) | readBuffer_[offset + 1];
                             offset += 2;
+                            if (qos == 1) {
+                                uint8_t puback[] = {0x40, 0x02,
+                                                    static_cast<uint8_t>(packetId >> 8),
+                                                    static_cast<uint8_t>(packetId & 0xFF)};
                     
                     doRead();
                 });
