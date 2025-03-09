@@ -256,6 +256,28 @@ void MQTTConnection::doRead() {
                 if (offset < length) {
                     std::string actualPayload(reinterpret_cast<char*>(readBuffer_.data() + offset),
                                                     length - offset);
+                            bool isPrintable = true;
+                            for (char c : actualPayload) {
+                                if (!isprint(static_cast<unsigned char>(c)) && !isspace(static_cast<unsigned char>(c))) {
+                                    isPrintable = false;
+                                    break;
+                                }
+                            }
+                            if (isPrintable) {
+                                payload = actualPayload;
+                                // Update callback with actual payload
+                                if (handler_.packetCallback_) {
+                                    handler_.packetCallback_(
+                                        PacketDirection::ClientToBroker,
+                                        packetTypeStr,
+                                        payload
+                                    );
+                                }
+                            }
+                        }
+                    }
+
+                }
         });
 }
 
