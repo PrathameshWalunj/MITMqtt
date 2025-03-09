@@ -54,3 +54,5 @@ Thumbs.db
 
 
 /imgui.ini  # ImGui config file
+
+/examples/
