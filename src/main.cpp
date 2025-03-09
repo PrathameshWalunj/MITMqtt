@@ -13,11 +13,13 @@
 #include <queue>
 
 
-namespace {
+namespace mitmqtt {
+
+
     // store captured packets for display
     struct PacketInfo {
         // client -> broker or vv
-        std::string direction;
+        PacketDirection direction;
         // CONNECT, PUBLISH etc
         std::string type;
         // packet content
@@ -28,8 +30,7 @@ namespace {
     std::vector<PacketInfo> capturedPackets;
 }
 
-// forward declaration generally better
-class Window;
+
 
 // custom deleter for GLFW window when using smart pointer
 struct GLFWwindowDeleter {
@@ -37,6 +38,10 @@ struct GLFWwindowDeleter {
         glfwDestroyWindow(window);
     }
 };
+
+
+
+
 
 class Application {
 public:
@@ -71,6 +76,7 @@ public:
                 mitmqtt::capturedPackets.erase(mitmqtt::capturedPackets.begin());
             }
         });
+
         // start io context in diff thread
         io_thread_ = std::thread([this]() {
             ioc_.run();
@@ -211,6 +217,12 @@ private:
             // basic connection info
             static char listenAddress[128] = "0.0.0.0";
             static int listenPort = 1883;
+
+            ImGui::TextColored(
+                interceptEnabled ? ImVec4(0.0f, 1.0f, 0.0f, 1.0f) : ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
+                "Status: %s", interceptEnabled ? "Running" : "Stopped"
+            );
+            ImGui::Separator();
             ImGui::InputText("Listen Address", listenAddress, IM_ARRAYSIZE(listenAddress));
             ImGui::InputInt("Listen Port", &listenPort);
 
@@ -226,9 +238,11 @@ private:
                     try {
                         mqtt_handler_.start(listenAddress, static_cast<uint16_t>(listenPort));
                         interceptEnabled = true;
+
                     }
                     catch (const std::exception& e) {
                         std::cerr << "Failed to start MQTT handler: " << e.what() << std::endl;
+                        ImGui::OpenPopup("Error");
 
                     }
                 }
@@ -236,6 +250,14 @@ private:
                     mqtt_handler_.stop();
                     interceptEnabled = false;
                 }
+            }
+
+            if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+                ImGui::Text("Failed to start MQTT interceptor");
+                if (ImGui::Button("OK", ImVec2(120,0))) {
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
             }
 
             ImGui::End();
@@ -251,12 +273,12 @@ private:
                 ImGui::TableSetupColumn("Payload");
                 ImGui::TableHeadersRow();
 
-                for (const auto& packet : capturedPackets) {
+                for (const auto& packet : mitmqtt::capturedPackets) {
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
                     ImGui::TextUnformatted(packet.timestamp.c_str());
                     ImGui::TableNextColumn();
-                    ImGui::TextUnformatted(packet.direction.c_str());
+                    ImGui::TextUnformatted(mitmqtt::directionToString(packet.direction));
                     ImGui::TableNextColumn();
                     ImGui::TextUnformatted(packet.type.c_str());
                     ImGui::TableNextColumn();
