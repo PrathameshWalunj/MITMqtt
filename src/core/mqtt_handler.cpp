@@ -244,9 +244,18 @@ void MQTTConnection::doRead() {
                                             "Message acknowledged"
                                         );
                                     }
+                                    // Continue reading
+                                    doRead();
+                                });
+                            
+                            
+                        }
                     
-                    doRead();
-                });
+                }
+
+                if (offset < length) {
+                    std::string actualPayload(reinterpret_cast<char*>(readBuffer_.data() + offset),
+                                                    length - offset);
         });
 }
 
