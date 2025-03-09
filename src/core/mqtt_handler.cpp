@@ -174,6 +174,14 @@ void MQTTConnection::doRead() {
 
                 std::cout<< "Received packet type: " << static_cast<int> (packetType) << " (" << packetTypeStr << ")" << std::endl;
                 
+                // Call the packet callback
+                if (handler_.packetCallback_) {
+                    handler_.packetCallback_(
+                        PacketDirection::ClientToBroker,
+                        packetTypeStr,
+                        payload
+                    );
+                }
                     }
                     
                     doRead();
