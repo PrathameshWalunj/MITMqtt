@@ -322,6 +322,24 @@ void MQTTConnection::doRead() {
                                 stop();
                                 return;
                             }
+                            // Log the response packet
+                            if (handler_.packetCallback_) {
+                                handler_.packetCallback_(
+                                    PacketDirection::BrokerToClient,
+                                    "PINGRESP",
+                                    "Ping response"
+                                );
+                            }
+                            
+                            // Continue reading
+                            doRead();
+                        });
+                    return;
+                }
+            }
+            
+            // Continue reading
+            doRead();
         });
 }
 
