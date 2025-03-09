@@ -282,6 +282,11 @@ void MQTTConnection::doRead() {
                     // Auto-acknowledge SUBSCRIBE
                     if (length >= 4) {
                         uint16_t packetId = (readBuffer_[2] << 8) | readBuffer_[3];
+                        // Send SUBACK (simplified, assumes all subscriptions succeeded with QoS 0)
+                        uint8_t suback[] = {0x90, 0x03, 
+                                          static_cast<uint8_t>(packetId >> 8), 
+                                          static_cast<uint8_t>(packetId & 0xFF),
+                                          0x00}; // Success with QoS 0
         });
 }
 
