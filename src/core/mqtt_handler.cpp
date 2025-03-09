@@ -135,6 +135,22 @@ void MQTTConnection::doRead() {
             if (length > 0) {
                 uint8_t firstByte = readBuffer_[0];
                 uint8_t packetType = (firstByte >> 4) & 0x0F;
+                std::string packetTypeStr;
+                
+                switch (packetType) {
+                    case 1: packetTypeStr = "CONNECT"; break;
+                    case 2: packetTypeStr = "CONNACK"; break;
+                    case 3: packetTypeStr = "PUBLISH"; break;
+                    case 4: packetTypeStr = "PUBACK"; break;
+                    case 8: packetTypeStr = "SUBSCRIBE"; break;
+                    case 9: packetTypeStr = "SUBACK"; break;
+                    case 10: packetTypeStr = "UNSUBSCRIBE"; break;
+                    case 11: packetTypeStr = "UNSUBACK"; break;
+                    case 12: packetTypeStr = "PINGREQ"; break;
+                    case 13: packetTypeStr = "PINGRESP"; break;
+                    case 14: packetTypeStr = "DISCONNECT"; break;
+                    default: packetTypeStr = "OTHER";
+                }
                     }
                     
                     doRead();
