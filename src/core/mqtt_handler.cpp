@@ -14,6 +14,7 @@ namespace mitmqtt {
                 return "Unknown";
         }
     }
+
 MQTTHandler::MQTTHandler(boost::asio::io_context& ioc)
     : ioc_(ioc)
     , acceptor_(ioc)
@@ -94,7 +95,7 @@ MQTTConnection::MQTTConnection(boost::asio::ip::tcp::socket socket, MQTTHandler&
 }
 
 void MQTTConnection::start() {
-    connected_ = true;
+    connectToBroker();
     doRead();
 }
 
@@ -111,6 +112,10 @@ void MQTTConnection::stop() {
     brokerSocket_.close(ec);
 }
 
+void MQTTConnection::connectToBroker() {
+    connected_ = true;
+}
+
 void MQTTConnection::doRead() {
     if (!connected_) return;
 
@@ -123,15 +128,7 @@ void MQTTConnection::doRead() {
                 return;
             }
 
-            // TODO: Parse MQTT packet and handle it
-            // For now, I'll just forward the data
-            boost::asio::async_write(
-                brokerSocket_,
-                boost::asio::buffer(readBuffer_, length),
-                [this, self](boost::system::error_code ec, std::size_t /*length*/) {
-                    if (ec) {
-                        stop();
-                        return;
+            // Basic MQTT packet parsing - first byte contains packet type
             if (length > 0) {
                 uint8_t firstByte = readBuffer_[0];
                 uint8_t packetType = (firstByte >> 4) & 0x0F;
@@ -151,6 +148,7 @@ void MQTTConnection::doRead() {
                     case 14: packetTypeStr = "DISCONNECT"; break;
                     default: packetTypeStr = "OTHER";
                 }
+                
                 // Extract payload (simplified)
                 std::string payload = "Binary data";
                 if (length > 2) {
@@ -182,6 +180,8 @@ void MQTTConnection::doRead() {
                         payload
                     );
                 }
+                
+                // For testing, respond with success packets
                 if (packetType == 1) { // CONNECT
                     // Send CONNACK
                     uint8_t connack[] = {0x20, 0x02, 0x00, 0x00};
@@ -215,19 +215,23 @@ void MQTTConnection::doRead() {
                         offset++;
                     }
                     offset++;
+
                     if (offset + 2 <= length) {
                         uint16_t topicLen = (readBuffer_[offset] << 8) | readBuffer_[offset + 1];
                         offset += 2;
 
                         offset += topicLen;
+
                         uint8_t qos = (firstByte >> 1) & 0x03;
                         if(qos > 0 && offset + 2 <= length) {
                             uint16_t packetId = (readBuffer_[offset] << 8) | readBuffer_[offset + 1];
                             offset += 2;
+
                             if (qos == 1) {
                                 uint8_t puback[] = {0x40, 0x02,
                                                     static_cast<uint8_t>(packetId >> 8),
                                                     static_cast<uint8_t>(packetId & 0xFF)};
+                            
                                 boost::asio::async_write(
                                     clientSocket_,
                                     boost::asio::buffer(puback, sizeof(puback)),
@@ -236,6 +240,7 @@ void MQTTConnection::doRead() {
                                         stop();
                                         return;
                                     }
+                                    
                                     // Log the response packet
                                     if (handler_.packetCallback_) {
                                         handler_.packetCallback_(
@@ -244,6 +249,7 @@ void MQTTConnection::doRead() {
                                             "Message acknowledged"
                                         );
                                     }
+                                    
                                     // Continue reading
                                     doRead();
                                 });
@@ -278,15 +284,18 @@ void MQTTConnection::doRead() {
                     }
 
                 }
+
                 else if (packetType == 8) { // SUBSCRIBE
                     // Auto-acknowledge SUBSCRIBE
                     if (length >= 4) {
                         uint16_t packetId = (readBuffer_[2] << 8) | readBuffer_[3];
+                        
                         // Send SUBACK (simplified, assumes all subscriptions succeeded with QoS 0)
                         uint8_t suback[] = {0x90, 0x03, 
                                           static_cast<uint8_t>(packetId >> 8), 
                                           static_cast<uint8_t>(packetId & 0xFF),
                                           0x00}; // Success with QoS 0
+                        
                         boost::asio::async_write(
                             clientSocket_,
                             boost::asio::buffer(suback, sizeof(suback)),
@@ -322,6 +331,7 @@ void MQTTConnection::doRead() {
                                 stop();
                                 return;
                             }
+                            
                             // Log the response packet
                             if (handler_.packetCallback_) {
                                 handler_.packetCallback_(
