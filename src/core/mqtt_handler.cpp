@@ -151,6 +151,29 @@ void MQTTConnection::doRead() {
                     case 14: packetTypeStr = "DISCONNECT"; break;
                     default: packetTypeStr = "OTHER";
                 }
+                // Extract payload (simplified)
+                std::string payload = "Binary data";
+                if (length > 2) {
+                    // Try to convert to readable string if possible
+                    std::string rawPayload(reinterpret_cast<char*>(readBuffer_.data() + 2), 
+                                          std::min(length - 2, static_cast<size_t>(100)));
+                    
+                    // Check if it's printable
+                    bool isPrintable = true;
+                    for (char c : rawPayload) {
+                        if (!isprint(static_cast<unsigned char>(c)) && !isspace(static_cast<unsigned char>(c))) {
+                            isPrintable = false;
+                            break;
+                        }
+                    }
+                    
+                    if (isPrintable) {
+                        payload = rawPayload;
+                    }
+                }
+
+                std::cout<< "Received packet type: " << static_cast<int> (packetType) << " (" << packetTypeStr << ")" << std::endl;
+                
                     }
                     
                     doRead();
