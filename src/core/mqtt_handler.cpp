@@ -132,6 +132,9 @@ void MQTTConnection::doRead() {
                     if (ec) {
                         stop();
                         return;
+            if (length > 0) {
+                uint8_t firstByte = readBuffer_[0];
+                uint8_t packetType = (firstByte >> 4) & 0x0F;
                     }
                     
                     doRead();
