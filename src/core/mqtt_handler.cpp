@@ -221,6 +221,9 @@ void MQTTConnection::doRead() {
 
                         offset += topicLen;
                         uint8_t qos = (firstByte >> 1) & 0x03;
+                        if(qos > 0 && offset + 2 <= length) {
+                            uint16_t packetId = (readBuffer_[offset] << 8) | readBuffer_[offset + 1];
+                            offset += 2;
                     
                     doRead();
                 });
