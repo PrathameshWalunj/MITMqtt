@@ -182,6 +182,32 @@ void MQTTConnection::doRead() {
                         payload
                     );
                 }
+                if (packetType == 1) { // CONNECT
+                    // Send CONNACK
+                    uint8_t connack[] = {0x20, 0x02, 0x00, 0x00};
+                    boost::asio::async_write(
+                        clientSocket_,
+                        boost::asio::buffer(connack, sizeof(connack)),
+                        [this, self](boost::system::error_code ec, std::size_t /*length*/) {
+                            if (ec) {
+                                stop();
+                                return;
+                            }
+                            
+                            // Log the response packet
+                            if (handler_.packetCallback_) {
+                                handler_.packetCallback_(
+                                    PacketDirection::BrokerToClient,
+                                    "CONNACK",
+                                    "Connection accepted"
+                                );
+                            }
+                            
+                            // Continue reading
+                            doRead();
+                        });
+                    return;
+                }
                     }
                     
                     doRead();
