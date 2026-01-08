@@ -1,7 +1,11 @@
-cmake_minimum_required(VERSION 3.15)
-project(MITMqtt VERSION 0.1.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.20)
 
-# Set C++ standard
+project(MITMqtt
+    VERSION 0.1.0
+    LANGUAGES CXX
+)
+
+# C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -10,27 +14,34 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(MITMQTT_BUILD_TESTS "Build test suite" OFF)
 option(MITMQTT_ENABLE_WARNINGS "Enable warnings" ON)
 
-# Find Boost
-set(BOOST_ROOT "C:/Boost/boost_1_87_0/boost_1_87_0")
-set(Boost_USE_STATIC_LIBS ON)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.82.0 REQUIRED)
+# Dependencies
+#Boost
+find_package(Boost REQUIRED)
 
-if(NOT Boost_FOUND)
-    message(FATAL_ERROR "Could not find Boost!")
+# OpenSSL 
+if(WIN32 AND DEFINED ENV{MSYSTEM})
+    # MSYS2 environment
+    set(OPENSSL_ROOT_DIR "/ucrt64")
+    set(OPENSSL_INCLUDE_DIR "/ucrt64/include")
+    find_package(OpenSSL CONFIG REQUIRED)
+elseif(APPLE)
+    # macOS - let's try Homebrew first
+    if(EXISTS "/opt/homebrew/opt/openssl")
+        set(OPENSSL_ROOT_DIR "/opt/homebrew/opt/openssl")
+    elseif(EXISTS "/usr/local/opt/openssl")
+        set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
+    endif()
+    find_package(OpenSSL REQUIRED)
+else()
+    # Linux and other Unix systems
+    find_package(OpenSSL REQUIRED)
 endif()
 
-# Log Boost information for debugging
-message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
-message(STATUS "Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
-message(STATUS "Boost_VERSION: ${Boost_VERSION}")
+message(STATUS "OpenSSL found: ${OPENSSL_VERSION}")
+set(MITMQTT_HAS_SSL ON)
 
-# Find other required packages
 find_package(OpenGL REQUIRED)
-find_package(OpenSSL REQUIRED)
 
-# Dependencies
 include(FetchContent)
 
 # Dear ImGui
@@ -41,7 +52,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
-# GLFW for window management
+# GLFW
 FetchContent_Declare(
     glfw
     GIT_REPOSITORY https://github.com/glfw/glfw.git
@@ -52,12 +63,7 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(glfw)
 
-# MQTT Library (using Boost.Beast WebSocket)
-include_directories(${Boost_INCLUDE_DIRS})
-add_definitions(-DBOOST_ALL_NO_LIB)
-add_definitions(-DBOOST_ALL_DYN_LINK)
-
-# nlohmann-json (for packet analysis)
+# nlohmann-json
 FetchContent_Declare(
     json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
@@ -65,7 +71,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json)
 
-# Set compiler warnings
+# Compiler warnings
 if(MITMQTT_ENABLE_WARNINGS)
     if(MSVC)
         add_compile_options(/W4)
@@ -74,15 +80,10 @@ if(MITMQTT_ENABLE_WARNINGS)
     endif()
 endif()
 
-# Add subdirectories
+# Subprojects
 add_subdirectory(src)
+
 if(MITMQTT_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
-
-# Install rules
-install(DIRECTORY include/MITMqtt
-        DESTINATION include
-        FILES_MATCHING PATTERN "*.hpp"
-)

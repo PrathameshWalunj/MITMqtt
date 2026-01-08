@@ -1,9 +1,8 @@
-# Build directories
+
 /build/
 /out/
 /cmake-build*/
 
-# IDE specific files
 .vs/
 .vscode/
 .idea/
@@ -11,7 +10,7 @@
 *.swo
 CMakeSettings.json
 
-# Compiled files
+
 *.o
 *.obj
 *.exe
@@ -22,7 +21,6 @@ CMakeSettings.json
 *.a
 *.pdb
 
-# CMake generated files
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
@@ -32,7 +30,7 @@ Makefile
 *.vcxproj.user
 *.sln
 
-# Dependency directories
+
 /extern/*/
 /_deps/
 
@@ -40,12 +38,12 @@ Makefile
 .DS_Store
 Thumbs.db
 
-# Logs and databases
+
 *.log
 *.sqlite
 *.db
 
-# Debug files
+
 *.dSYM/
 *.su
 *.idb
@@ -53,6 +51,19 @@ Thumbs.db
 
 
 
-/imgui.ini  # ImGui config file
-
+/imgui.ini  
 /examples/
+
+
+mitmqtt_ca.crt
+mitmqtt_ca.key
+*.crt
+*.key
+*.pem
+
+mitmqtt_capture.log
+*_capture.log
+
+
+
+*.log
