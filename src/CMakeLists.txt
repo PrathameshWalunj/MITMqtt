@@ -36,6 +36,7 @@ target_include_directories(MITMqtt_lib
         ${CMAKE_SOURCE_DIR}/include
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
+        ${Boost_INCLUDE_DIRS}
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
 )

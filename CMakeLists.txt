@@ -15,7 +15,16 @@ option(MITMQTT_BUILD_TESTS "Build test suite" OFF)
 option(MITMQTT_ENABLE_WARNINGS "Enable warnings" ON)
 
 # Dependencies
-#Boost
+# Boost - set hints for macOS Homebrew
+if(APPLE)
+    if(EXISTS "/opt/homebrew/opt/boost")
+        set(BOOST_ROOT "/opt/homebrew/opt/boost")
+        set(Boost_INCLUDE_DIR "/opt/homebrew/opt/boost/include")
+    elseif(EXISTS "/usr/local/opt/boost")
+        set(BOOST_ROOT "/usr/local/opt/boost")
+        set(Boost_INCLUDE_DIR "/usr/local/opt/boost/include")
+    endif()
+endif()
 find_package(Boost REQUIRED)
 
 # OpenSSL 
