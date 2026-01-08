@@ -50,6 +50,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install boost openssl@3 glfw
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
 
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows'
@@ -64,11 +66,19 @@ jobs:
             mingw-w64-ucrt-x86_64-boost
             mingw-w64-ucrt-x86_64-openssl
             mingw-w64-ucrt-x86_64-glfw
+            p7zip
 
-      - name: Configure (Linux/macOS)
-        if: runner.os != 'Windows'
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$(brew --prefix boost);$(brew --prefix openssl@3)" \
+            -DOPENSSL_ROOT_DIR=$(brew --prefix openssl@3)
 
       - name: Configure (Windows)
         if: runner.os == 'Windows'
